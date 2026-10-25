@@ -6,10 +6,10 @@
 
 ## 導入
 
-1. ミルフィを導入済みの Unity 2022.3 プロジェクトを用意します。
+1. ミルフィ 1.5.0 の unitypackage を導入済みの Unity 2022.3 プロジェクトを用意します。
 2. VCC / ALCOM に https://suu31.net/vpm/eat-ear/index.json を登録して `jp.suu.eat-ear` を追加します。
 3. `Packages/jp.suu.eat-ear/Runtime/EatEar.prefab` をアバター直下に置き、名前を `EatEar` のままにします。unitypackage 版では `Assets/SaiEatEar/EatEar.prefab` にあります。
-4. `EatEar/EatEar_R_Physbone/EatEar_R` と `EatEar/EatEar_L_Physbone/EatEar_L` のマテリアルを、それぞれアバターの耳に使っているマテリアルへ設定します。初期値は Unity 標準の中立マテリアルです。
+4. 耳には旧版と同じ Milfy 付属の `Hair_Another.mat` が初期状態で適用されます。アバターの耳に別の材質を使っている場合だけ、`EatEar/EatEar_R_Physbone/EatEar_R` と `EatEar/EatEar_L_Physbone/EatEar_L` をそれぞれ同じマテリアルへ設定します。
 5. 元の `Armature/Hips/Spine/Chest/Neck/Head/Ear_Root/Ear.L` と `Ear.R` の PhysBone の `Allow Grabbing` を無効にします。耳の周りの髪・リボンも掴めない設定にすると操作しやすくなります。
 
 VRChat SDK と Modular Avatar は VPM の依存パッケージとして必要です。検証環境は Unity 2022.3.22f1 / SDK 3.10.4 / MA 1.18.1 / NDMF 1.14.3 です。
@@ -30,3 +30,5 @@ VPM 版と unitypackage 版は同じ Prefab・Animator・クリップ GUID を�
 - 左右それぞれの耳の接触判定で、同じ側の音源を再生します。
 - 音源は食べた地点で 0.65 秒固定し、約 0.575 秒の音声が終わってから追従へ戻します。
 - 適用は MA / NDMF によるビルド時統合です。アバター本体の Animator への手動コピーは不要です。
+
+Milfy の材質・テクスチャは本パッケージには含めません。付属 `Hair_Another.mat` を元の GUID で参照するため、Milfy の導入が必要です。マテリアルを移動した場合も GUID が同じなら参照は維持されます。

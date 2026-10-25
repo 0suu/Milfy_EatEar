@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 - 2026-10-25
+
+- 耳の初期マテリアルを旧版と同じ Milfy 付属 Hair_Another.mat の参照へ復元。
+- 個人用フォルダへの移動を材質の出自と誤認し、Default Material に置換していた問題を修正。
+- 材質・テクスチャを再配布せず、元の GUID と既存の材質 Override を維持。
+
 ## 1.1.1 - 2026-10-25
 
 - Unity の Packages 欄と配布ドキュメントの表示名を Milfy_EatEar に統一。

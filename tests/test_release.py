@@ -22,6 +22,7 @@ from build_release import (  # noqa: E402
 PACKAGE_ROOT = ROOT / "Packages" / PACKAGE_ID
 VERSION = json.loads((PACKAGE_ROOT / "package.json").read_text(encoding="utf-8"))["version"]
 LEGACY_FIXTURE = ROOT / "tests" / "fixtures" / "legacy-guids.json"
+MILFY_MATERIAL_FIXTURE = ROOT / "tests" / "fixtures" / "milfy-material-reference.json"
 META_GUID = re.compile(rb"^guid:\s*([0-9a-fA-F]{32})\s*$", re.MULTILINE)
 
 
@@ -110,6 +111,74 @@ class ReleaseBuildTests(unittest.TestCase):
         for name, digest in sums.items():
             artifact = artifacts["vpm_zip"] if name == zip_path.name else unitypackage_path
             self.assertEqual(self.sha256(artifact), digest)
+
+    def test_milfy_material_overrides_stay_external_in_both_archives(self):
+        material_fixture = json.loads(
+            MILFY_MATERIAL_FIXTURE.read_text(encoding="utf-8")
+        )
+        material_guid = material_fixture["originalEatEarMaterialGuid"].lower()
+        material_path = material_fixture["materials"][material_guid]
+        self.assertEqual(
+            material_path,
+            "Assets/PLUSONE/Milfy/Materials/kaihen(Another)/Hair_Another.mat",
+        )
+
+        prefab_path = PACKAGE_ROOT / "Runtime" / "EatEar.prefab"
+        prefab_bytes = prefab_path.read_bytes()
+        prefab_text = prefab_bytes.decode("utf-8")
+        material_overrides = re.findall(
+            r"propertyPath: m_Materials\.Array\.data\[0\]\s+value:\s+"
+            r"objectReference: \{fileID: 2100000, guid: ([0-9a-fA-F]{32}), type: 2\}",
+            prefab_text,
+        )
+        self.assertEqual(
+            [guid.lower() for guid in material_overrides],
+            [material_guid, material_guid],
+            "Both ear material overrides must retain the original Milfy material GUID",
+        )
+
+        artifacts = build_release(ROOT, VERSION, self.temp_root / "milfy-material")
+        with zipfile.ZipFile(artifacts["vpm_zip"]) as archive:
+            vpm_names = set(archive.namelist())
+            self.assertEqual(archive.read("Runtime/EatEar.prefab"), prefab_bytes)
+            self.assertNotIn(material_guid, {
+                guid.decode("ascii").lower()
+                for name in vpm_names
+                if name.endswith(".meta")
+                for guid in META_GUID.findall(archive.read(name))
+            })
+            self.assertFalse(any("PLUSONE/Milfy/" in name for name in vpm_names))
+            self.assertNotIn(Path(material_path).name, {Path(name).name for name in vpm_names})
+            self.assertFalse(any(
+                Path(name).suffix.lower() in {".png", ".jpg", ".jpeg", ".tga", ".psd", ".tif", ".tiff"}
+                for name in vpm_names
+            ), "Milfy texture files must not be bundled in the VPM archive")
+
+        with gzip.open(artifacts["unitypackage"], "rb") as compressed:
+            with tarfile.open(fileobj=compressed, mode="r:") as archive:
+                pathname_to_guid = {
+                    archive.extractfile(member).read().decode("utf-8"): member.name.split("/", 1)[0]
+                    for member in archive.getmembers()
+                    if member.name.endswith("/pathname")
+                }
+                legacy_prefab_path = "Assets/SaiEatEar/EatEar.prefab"
+                prefab_guid = pathname_to_guid[legacy_prefab_path]
+                self.assertEqual(
+                    archive.extractfile(f"{prefab_guid}/asset").read(), prefab_bytes
+                )
+                self.assertNotIn(material_guid, pathname_to_guid.values())
+                self.assertFalse(any(
+                    path.startswith("Assets/PLUSONE/Milfy/")
+                    for path in pathname_to_guid
+                ))
+                self.assertNotIn(
+                    Path(material_path).name,
+                    {Path(path).name for path in pathname_to_guid},
+                )
+                self.assertFalse(any(
+                    Path(path).suffix.lower() in {".png", ".jpg", ".jpeg", ".tga", ".psd", ".tif", ".tiff"}
+                    for path in pathname_to_guid
+                ), "Milfy texture files must not be bundled in the legacy archive")
 
     def test_compat_controller_is_shipped_with_its_original_guid_and_closed_reference(self):
         artifacts = build_release(ROOT, VERSION, self.temp_root / "compat-controller")
