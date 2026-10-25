@@ -1,0 +1,4 @@
+dist/
+ValidationProject~/
+__pycache__/
+*.pyc

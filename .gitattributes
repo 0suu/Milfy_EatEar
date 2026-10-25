@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.fbx binary
+*.mp3 binary
+*.zip binary
+*.unitypackage binary

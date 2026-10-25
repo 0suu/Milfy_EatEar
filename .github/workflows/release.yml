@@ -1,0 +1,101 @@
+name: Build EatEar Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Must match Packages/jp.suu.eat-ear/package.json
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: eat-ear-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
+
+      - name: Validate version and reject an existing tag
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]
+          existing_tags="$RUNNER_TEMP/eat-ear-release-tags"
+          git ls-remote --tags origin "refs/tags/$VERSION" > "$existing_tags"
+          if [[ -s "$existing_tags" ]]; then
+            echo "Release tag already exists: $VERSION" >&2
+            exit 1
+          fi
+
+      - name: Test and build release archives
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_*.py'
+          python scripts/build_release.py --version "$VERSION" --output-dir dist
+          (cd dist && sha256sum --check SHA256SUMS)
+
+      - name: Read VPM release checksum
+        id: artifacts
+        run: |
+          set -euo pipefail
+          vpm_zip="jp.suu.eat-ear-$VERSION.zip"
+          unitypackage="jp.suu.eat-ear-$VERSION.unitypackage"
+          zip_sha256="$(awk -v name="$vpm_zip" '$2 == name {print $1}' dist/SHA256SUMS)"
+          [[ "$zip_sha256" =~ ^[0-9a-fA-F]{64}$ ]]
+          echo "vpm_zip=$vpm_zip" >> "$GITHUB_OUTPUT"
+          echo "unitypackage=$unitypackage" >> "$GITHUB_OUTPUT"
+          echo "zip_sha256=$zip_sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        with:
+          token: ${{ github.token }}
+          tag_name: ${{ inputs.version }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          overwrite_files: false
+          files: |
+            dist/${{ steps.artifacts.outputs.vpm_zip }}
+            dist/${{ steps.artifacts.outputs.unitypackage }}
+            dist/SHA256SUMS
+
+      - name: Dispatch suu-home VPM update or show manual inputs
+        env:
+          DISPATCH_TOKEN: ${{ secrets.SUU_HOME_DISPATCH_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          ZIP_FILE: ${{ steps.artifacts.outputs.vpm_zip }}
+          ZIP_SHA256: ${{ steps.artifacts.outputs.zip_sha256 }}
+        run: |
+          set -euo pipefail
+          release_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$ZIP_FILE"
+          if [[ -z "$DISPATCH_TOKEN" ]]; then
+            echo "::notice::SUU_HOME_DISPATCH_TOKEN is not configured; no secret was created."
+            echo "::notice::Run https://github.com/0suu/suu-home/actions/workflows/update-vpm-from-release.yml on develop with package_name=jp.suu.eat-ear, version=$VERSION, release_url=$release_url, zip_sha256=$ZIP_SHA256."
+            exit 0
+          fi
+
+          payload="$(jq -n \
+            --arg package_name "jp.suu.eat-ear" \
+            --arg version "$VERSION" \
+            --arg release_url "$release_url" \
+            --arg zip_sha256 "$ZIP_SHA256" \
+            '{event_type:"eat-ear-release",client_payload:{package_name:$package_name,version:$version,release_url:$release_url,zip_sha256:$zip_sha256}}')"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $DISPATCH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/0suu/suu-home/dispatches \
+            -d "$payload"
