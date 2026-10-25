@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 - 2026-10-25
+
+- Unity の Packages 欄と配布ドキュメントの表示名を Milfy_EatEar に統一。
+- パッケージ識別子、GUID、Prefab の階層は変更なし。
+
 ## 1.1.0 - 2026-10-25
 
 - VPM 配布に対応。旧 unitypackage と同じ GUID を維持。

@@ -1,4 +1,4 @@
-# Milfy EatEar / お耳たべれ～る
+# Milfy_EatEar
 
 ミルフィの耳を掴んで食べられる Modular Avatar 対応ギミックです。
 商品ページ: https://suu-sai.booth.pm/items/6754877
