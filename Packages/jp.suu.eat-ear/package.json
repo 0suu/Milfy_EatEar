@@ -20,9 +20,5 @@
   "vpmDependencies": {
     "com.vrchat.avatars": ">=3.10.4 <4.0.0-a",
     "nadena.dev.modular-avatar": ">=1.18.1 <2.0.0-a"
-  },
-  "legacyFolders": {
-    "Assets\\SaiEatEar": "e1004d0dadfdc504e87428a6254d3325",
-    "Assets\\sai\\SaiEatEar": "e1004d0dadfdc504e87428a6254d3325"
   }
 }

@@ -157,35 +157,6 @@ def legacy_assets(package_root: Path) -> list[LegacyAsset]:
         seen_guids[guid] = legacy_path
         records.append(LegacyAsset(legacy_path, source, meta, guid, is_directory))
 
-    # The checked-in fixture is the BOOTH package's original GUID/path inventory.
-    fixture_path = package_root.parents[1] / "tests" / "fixtures" / "legacy-guids.json"
-    try:
-        original = json.loads(fixture_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise ValueError(f"Could not read legacy GUID fixture: {fixture_path}") from error
-    expected = {path: guid.lower() for path, guid in original.items()}
-    expected[f"{LEGACY_ROOT}/Milfy_EatEar.prefab"] = expected.pop(f"{LEGACY_ROOT}/EatEar.prefab")
-    actual = {record.path: record.guid for record in records if record.path.startswith(f"{LEGACY_ROOT}/") or record.path == LEGACY_ROOT}
-    for path, guid in expected.items():
-        if actual.get(path) != guid:
-            raise ValueError(
-                f"Original BOOTH GUID mismatch at {path}: expected {guid}, got {actual.get(path)!r}"
-            )
-    manifest = json.loads((package_root / "package.json").read_text(encoding="utf-8"))
-    root_guid = actual.get(LEGACY_ROOT)
-    expected_legacy_folders = {
-        "Assets\\SaiEatEar": root_guid,
-        "Assets\\sai\\SaiEatEar": root_guid,
-    }
-    if manifest.get("legacyFolders") != expected_legacy_folders:
-        raise ValueError("package.json legacyFolders must preserve both original folder aliases and root GUID")
-    for path in actual:
-        if path not in expected and path not in {
-            f"{LEGACY_ROOT}/README.md",
-            f"{LEGACY_ROOT}/CHANGELOG.md",
-            f"{LEGACY_ROOT}/Animation/EnableParticle_L_Relative.anim",
-        }:
-            raise ValueError(f"Unexpected legacy asset not present in original GUID fixture: {path}")
     return sorted(records, key=lambda record: (record.guid, record.path))
 
 

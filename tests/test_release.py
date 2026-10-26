@@ -21,7 +21,6 @@ from build_release import (  # noqa: E402
 
 PACKAGE_ROOT = ROOT / "Packages" / PACKAGE_ID
 VERSION = json.loads((PACKAGE_ROOT / "package.json").read_text(encoding="utf-8"))["version"]
-LEGACY_FIXTURE = ROOT / "tests" / "fixtures" / "legacy-guids.json"
 MILFY_MATERIAL_FIXTURE = ROOT / "tests" / "fixtures" / "milfy-material-reference.json"
 META_GUID = re.compile(rb"^guid:\s*([0-9a-fA-F]{32})\s*$", re.MULTILINE)
 
@@ -38,7 +37,7 @@ class ReleaseBuildTests(unittest.TestCase):
         shutil.copytree(ROOT / "tests" / "fixtures", target / "tests" / "fixtures")
         return target
 
-    def test_vpm_zip_and_legacy_unitypackage_preserve_original_guids(self):
+    def test_vpm_zip_and_unitypackage_include_current_assets(self):
         artifacts = build_release(ROOT, VERSION, self.temp_root / "out")
         zip_path = artifacts["vpm_zip"]
         with zipfile.ZipFile(zip_path) as archive:
@@ -61,10 +60,7 @@ class ReleaseBuildTests(unittest.TestCase):
             manifest = json.loads(archive.read("package.json"))
             self.assertEqual(manifest["name"], PACKAGE_ID)
             self.assertEqual(manifest["version"], VERSION)
-            self.assertEqual(manifest["legacyFolders"], {
-                r"Assets\SaiEatEar": "e1004d0dadfdc504e87428a6254d3325",
-                r"Assets\sai\SaiEatEar": "e1004d0dadfdc504e87428a6254d3325",
-            })
+
 
         unitypackage_path = artifacts["unitypackage"]
         with gzip.open(unitypackage_path, "rb") as compressed:
@@ -94,12 +90,14 @@ class ReleaseBuildTests(unittest.TestCase):
                             "Assets/SaiEatEar/FBX",
                         })
                 self.assertEqual(len(archive_names), 3 * len(actual))
-                old = json.loads(LEGACY_FIXTURE.read_text(encoding="utf-8"))
-                expected = old.copy()
-                expected["Assets/SaiEatEar/Milfy_EatEar.prefab"] = expected.pop("Assets/SaiEatEar/EatEar.prefab")
-                expected["Assets/SaiEatEar/Animation/EnableParticle_L_Relative.anim"] = self.meta_guid(PACKAGE_ROOT / "Runtime" / "Animation" / "EnableParticle_L_Relative.anim.meta")
-                expected["Assets/SaiEatEar/README.md"] = self.meta_guid(PACKAGE_ROOT / "README.md.meta")
-                expected["Assets/SaiEatEar/CHANGELOG.md"] = self.meta_guid(PACKAGE_ROOT / "CHANGELOG.md.meta")
+                expected = {"Assets/SaiEatEar": self.meta_guid(PACKAGE_ROOT / "Runtime.meta")}
+                for source in (PACKAGE_ROOT / "Runtime").rglob("*"):
+                    if source.name.endswith(".meta"):
+                        continue
+                    path = "Assets/SaiEatEar/" + source.relative_to(PACKAGE_ROOT / "Runtime").as_posix()
+                    expected[path] = self.meta_guid(Path(f"{source}.meta"))
+                for name in ("README.md", "CHANGELOG.md"):
+                    expected[f"Assets/SaiEatEar/{name}"] = self.meta_guid(PACKAGE_ROOT / f"{name}.meta")
                 self.assertEqual(actual, expected)
                 prefab_path = "Assets/SaiEatEar/Milfy_EatEar.prefab"
                 prefab_guid = actual[prefab_path]
@@ -181,68 +179,6 @@ class ReleaseBuildTests(unittest.TestCase):
                     Path(path).suffix.lower() in {".png", ".jpg", ".jpeg", ".tga", ".psd", ".tif", ".tiff"}
                     for path in pathname_to_guid
                 ), "Milfy texture files must not be bundled in the legacy archive")
-
-    def test_compat_controller_is_shipped_with_its_original_guid_and_closed_reference(self):
-        artifacts = build_release(ROOT, VERSION, self.temp_root / "compat-controller")
-        legacy_path = "Assets/SaiEatEar/Animation/Milfy_250326a.controller"
-        fixture = json.loads(LEGACY_FIXTURE.read_text(encoding="utf-8"))
-        controller_guid = fixture[legacy_path]
-        controller = PACKAGE_ROOT / "Runtime" / "Animation" / "Milfy_250326a.controller"
-        controller_meta = Path(f"{controller}.meta")
-        controller_bytes = controller.read_bytes()
-        expected_animation_guid = fixture[
-            "Assets/SaiEatEar/Animation/EnableParticle_L.anim"
-        ]
-        references = {
-            guid.decode("ascii").lower()
-            for guid in re.findall(rb"\bguid:\s*([0-9a-fA-F]{32})\b", controller_bytes)
-        }
-        self.assertEqual(references, {expected_animation_guid})
-
-        with zipfile.ZipFile(artifacts["vpm_zip"]) as archive:
-            self.assertEqual(
-                archive.read("Runtime/Animation/Milfy_250326a.controller"),
-                controller_bytes,
-            )
-            controller_meta_bytes = archive.read(
-                "Runtime/Animation/Milfy_250326a.controller.meta"
-            )
-            self.assertEqual(controller_meta_bytes, controller_meta.read_bytes())
-            self.assertEqual(
-                META_GUID.findall(controller_meta_bytes),
-                [controller_guid.encode("ascii")],
-            )
-            animation_meta = archive.read(
-                "Runtime/Animation/EnableParticle_L.anim.meta"
-            )
-            self.assertEqual(
-                META_GUID.findall(animation_meta),
-                [expected_animation_guid.encode("ascii")],
-            )
-
-        with gzip.open(artifacts["unitypackage"], "rb") as compressed:
-            with tarfile.open(fileobj=compressed, mode="r:") as archive:
-                pathname_to_guid = {
-                    archive.extractfile(member).read().decode("utf-8"): member.name.split("/", 1)[0]
-                    for member in archive.getmembers()
-                    if member.name.endswith("/pathname")
-                }
-                self.assertEqual(pathname_to_guid[legacy_path], controller_guid)
-                self.assertEqual(
-                    archive.extractfile(f"{controller_guid}/asset").read(),
-                    controller_bytes,
-                )
-                self.assertEqual(
-                    archive.extractfile(f"{controller_guid}/asset.meta").read(),
-                    controller_meta.read_bytes(),
-                )
-                self.assertEqual(
-                    pathname_to_guid[
-                        "Assets/SaiEatEar/Animation/EnableParticle_L.anim"
-                    ],
-                    expected_animation_guid,
-                )
-                self.assertTrue(references.issubset(set(pathname_to_guid.values())))
 
     def test_build_is_byte_reproducible_and_checksums_match(self):
         first = build_release(ROOT, VERSION, self.temp_root / "first")

@@ -16,9 +16,11 @@ VRChat SDK と Modular Avatar は VPM の依存パッケージとして必要で
 
 ## 更新
 
-VPM 版と unitypackage 版は同じ Prefab・Animator・クリップ GUID を使用します。旧版を個別に改変している場合は更新前に複製を保存してください。VPM 導入時は旧 `Assets/SaiEatEar` または `Assets/sai/SaiEatEar` を `legacyFolders` で置き換えます。両形式を同時に残すと GUID が重複するため、どちらか一方を使います。
+VPM 版と unitypackage 版はどちらか一方を導入してください。両方を同時に残すと GUID が重複します。
 
-元 Prefab に繋がったアバターの設定と通常の Prefab Override は同じ GUID で引き継ぎます。Prefab の初期名は `Milfy_EatEar` です。アニメーションと音声は MA の Prefab 相対参照で適用されるため、旧名 `EatEar` の既存配置や配置後の改名にも対応します。旧版の Milfy_250326a.controller も参照互換性のため原版の内容で残しています。Prefab を完全に Unpack したコピーや Animator 自体を複製した構成は共有更新の対象外です。
+旧版からの互換更新・自動移行は対象外です。旧版の配置と配布アセットを削除してから、新しい `Milfy_EatEar.prefab` を配置してください。
+
+アニメーションと音声は MA の Prefab 相対参照で適用されるため、配置後に名前を変更しても動作します。
 
 ## 利用条件
 
