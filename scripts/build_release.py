@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path, PurePosixPath
 
-PACKAGE_ID = "jp.suu.eat-ear"
+PACKAGE_ID = "jp.suu.milfy-eat-ear"
 PACKAGE_DIRECTORY = Path("Packages") / PACKAGE_ID
 LEGACY_ROOT = "Assets/SaiEatEar"
 SERIALIZED_EXTENSIONS = {".prefab", ".anim", ".controller", ".mat", ".asset"}
@@ -302,7 +302,7 @@ def build_release(repository_root: Path, version: str, output_dir: Path) -> dict
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", required=True, help="Must match Packages/jp.suu.eat-ear/package.json")
+    parser.add_argument("--version", required=True, help="Must match Packages/jp.suu.milfy-eat-ear/package.json")
     parser.add_argument("--output-dir", type=Path, default=Path("dist"))
     args = parser.parse_args()
     try:

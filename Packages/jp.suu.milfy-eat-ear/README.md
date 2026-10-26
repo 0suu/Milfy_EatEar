@@ -7,8 +7,8 @@
 ## 導入
 
 1. ミルフィ 1.5.0 の unitypackage を導入済みの Unity 2022.3 プロジェクトを用意します。
-2. VCC / ALCOM に https://suu31.net/vpm/eat-ear/index.json を登録して `jp.suu.eat-ear` を追加します。
-3. `Packages/jp.suu.eat-ear/Runtime/Milfy_EatEar.prefab` をアバター直下に置きます。unitypackage 版では `Assets/SaiEatEar/Milfy_EatEar.prefab` にあります。
+2. VCC / ALCOM に https://suu31.net/vpm/eat-ear/index.json を登録して `jp.suu.milfy-eat-ear` を追加します。
+3. `Packages/jp.suu.milfy-eat-ear/Runtime/Milfy_EatEar.prefab` をアバター直下に置きます。unitypackage 版では `Assets/SaiEatEar/Milfy_EatEar.prefab` にあります。
 4. 耳には旧版と同じ Milfy 付属の `Hair_Another.mat` が初期状態で適用されます。アバターの耳に別の材質を使っている場合だけ、`Milfy_EatEar/EatEar_R_Physbone/EatEar_R` と `Milfy_EatEar/EatEar_L_Physbone/EatEar_L` をそれぞれ同じマテリアルへ設定します。
 5. 元の `Armature/Hips/Spine/Chest/Neck/Head/Ear_Root/Ear.L` と `Ear.R` の PhysBone の `Allow Grabbing` を無効にします。耳の周りの髪・リボンも掴めない設定にすると操作しやすくなります。
 
@@ -17,6 +17,8 @@ VRChat SDK と Modular Avatar は VPM の依存パッケージとして必要で
 ## 更新
 
 VPM 版と unitypackage 版はどちらか一方を導入してください。両方を同時に残すと GUID が重複します。
+
+パッケージ ID は `jp.suu.milfy-eat-ear` です。旧 ID のパッケージと以前の VPM リポジトリ登録を削除し、上記 URL を登録し直して新 ID を導入してください。互換・自動移行処理はありません。
 
 旧版からの互換更新・自動移行は対象外です。旧版の配置と配布アセットを削除してから、新しい `Milfy_EatEar.prefab` を配置してください。
 
