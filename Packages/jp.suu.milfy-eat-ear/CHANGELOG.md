@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 - 2026-10-26
+
+- VPM 公開 URL と導入案内を https://suu31.net/vpm/milfy-eat-ear/index.json に統一。旧 URL の互換処理は追加なし。
+
 ## 1.3.0 - 2026-10-26
 
 - パッケージ ID と配布元フォルダーを jp.suu.milfy-eat-ear に変更。

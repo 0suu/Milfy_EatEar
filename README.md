@@ -9,7 +9,7 @@ BOOTH: https://suu-sai.booth.pm/items/6754877
 配布物は Packages/jp.suu.milfy-eat-ear を共通ソースとして生成します。ローカルでは、リポジトリのルートから次を実行してください。
 
 python -m unittest discover -s tests -p 'test_*.py'
-python scripts/build_release.py --version 1.3.0
+python scripts/build_release.py --version 1.3.1
 
 生成先は dist/ です。SHA256SUMS には VPM zip と unitypackage のチェックサムが入ります。テストは配布対象アセットとmeta、外部GUID参照、unitypackageのパス、安全性、アーカイブの再現性を検証します。
 
