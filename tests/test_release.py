@@ -112,6 +112,27 @@ class ReleaseBuildTests(unittest.TestCase):
             artifact = artifacts["vpm_zip"] if name == zip_path.name else unitypackage_path
             self.assertEqual(self.sha256(artifact), digest)
 
+    def test_ear_mesh_uv_assignments_match_milfy(self):
+        # Confirmed against the ear UV regions in the original Milfy 1.5.0 model.
+        expected = {
+            "EatEar_L": ("145876726828247544", "d9dcb949759a3f14d9e2598f6812e5f1"),
+            "EatEar_R": ("-3176753397780858161", "7a159063dc7faa84c9966dbf0a2083f8"),
+        }
+        text = (PACKAGE_ROOT / "Runtime" / "Milfy_EatEar.prefab").read_text(encoding="utf-8")
+        actual = {}
+        for block in re.split(r"(?m)^--- !u!1001 &", text)[1:]:
+            block = block.split("\n---", 1)[0]
+            name = re.search(r"propertyPath: m_Name\s+value: (EatEar_[LR])\b", block)
+            if name is None:
+                continue
+            mesh = re.search(
+                r"propertyPath: m_Mesh\s+value:\s+objectReference: "
+                r"\{fileID: (-?\d+), guid: ([0-9a-f]{32}),", block,
+            )
+            self.assertIsNotNone(mesh, f"Missing explicit mesh assignment for {name[1]}")
+            actual[name[1]] = mesh.groups()
+        self.assertEqual(actual, expected)
+
     def test_milfy_material_overrides_stay_external_in_both_archives(self):
         material_fixture = json.loads(
             MILFY_MATERIAL_FIXTURE.read_text(encoding="utf-8")
