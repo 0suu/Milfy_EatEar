@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 - 2026-10-26
 
 - Prefab ファイル名と初期オブジェクト名を Milfy_EatEar に統一。
 - アニメーション・音声を MA の Prefab 相対参照へ変更し、配置後の改名にも対応。
