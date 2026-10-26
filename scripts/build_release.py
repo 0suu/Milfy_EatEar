@@ -164,6 +164,7 @@ def legacy_assets(package_root: Path) -> list[LegacyAsset]:
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError(f"Could not read legacy GUID fixture: {fixture_path}") from error
     expected = {path: guid.lower() for path, guid in original.items()}
+    expected[f"{LEGACY_ROOT}/Milfy_EatEar.prefab"] = expected.pop(f"{LEGACY_ROOT}/EatEar.prefab")
     actual = {record.path: record.guid for record in records if record.path.startswith(f"{LEGACY_ROOT}/") or record.path == LEGACY_ROOT}
     for path, guid in expected.items():
         if actual.get(path) != guid:
@@ -182,6 +183,7 @@ def legacy_assets(package_root: Path) -> list[LegacyAsset]:
         if path not in expected and path not in {
             f"{LEGACY_ROOT}/README.md",
             f"{LEGACY_ROOT}/CHANGELOG.md",
+            f"{LEGACY_ROOT}/Animation/EnableParticle_L_Relative.anim",
         }:
             raise ValueError(f"Unexpected legacy asset not present in original GUID fixture: {path}")
     return sorted(records, key=lambda record: (record.guid, record.path))

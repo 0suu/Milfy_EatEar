@@ -96,14 +96,16 @@ class ReleaseBuildTests(unittest.TestCase):
                 self.assertEqual(len(archive_names), 3 * len(actual))
                 old = json.loads(LEGACY_FIXTURE.read_text(encoding="utf-8"))
                 expected = old.copy()
+                expected["Assets/SaiEatEar/Milfy_EatEar.prefab"] = expected.pop("Assets/SaiEatEar/EatEar.prefab")
+                expected["Assets/SaiEatEar/Animation/EnableParticle_L_Relative.anim"] = self.meta_guid(PACKAGE_ROOT / "Runtime" / "Animation" / "EnableParticle_L_Relative.anim.meta")
                 expected["Assets/SaiEatEar/README.md"] = self.meta_guid(PACKAGE_ROOT / "README.md.meta")
                 expected["Assets/SaiEatEar/CHANGELOG.md"] = self.meta_guid(PACKAGE_ROOT / "CHANGELOG.md.meta")
                 self.assertEqual(actual, expected)
-                prefab_path = "Assets/SaiEatEar/EatEar.prefab"
+                prefab_path = "Assets/SaiEatEar/Milfy_EatEar.prefab"
                 prefab_guid = actual[prefab_path]
                 prefab_asset = archive.extractfile(f"{prefab_guid}/asset").read()
-                self.assertEqual(prefab_asset, (PACKAGE_ROOT / "Runtime" / "EatEar.prefab").read_bytes())
-                self.assertEqual(archive.extractfile(f"{prefab_guid}/asset.meta").read(), (PACKAGE_ROOT / "Runtime" / "EatEar.prefab.meta").read_bytes())
+                self.assertEqual(prefab_asset, (PACKAGE_ROOT / "Runtime" / "Milfy_EatEar.prefab").read_bytes())
+                self.assertEqual(archive.extractfile(f"{prefab_guid}/asset.meta").read(), (PACKAGE_ROOT / "Runtime" / "Milfy_EatEar.prefab.meta").read_bytes())
                 self.assertTrue(all(name.split("/", 1)[0] in actual.values() for name in archive_names))
 
         sums = self.parse_sums(artifacts["checksums"])
@@ -123,7 +125,7 @@ class ReleaseBuildTests(unittest.TestCase):
             "Assets/PLUSONE/Milfy/Materials/kaihen(Another)/Hair_Another.mat",
         )
 
-        prefab_path = PACKAGE_ROOT / "Runtime" / "EatEar.prefab"
+        prefab_path = PACKAGE_ROOT / "Runtime" / "Milfy_EatEar.prefab"
         prefab_bytes = prefab_path.read_bytes()
         prefab_text = prefab_bytes.decode("utf-8")
         material_overrides = re.findall(
@@ -140,7 +142,7 @@ class ReleaseBuildTests(unittest.TestCase):
         artifacts = build_release(ROOT, VERSION, self.temp_root / "milfy-material")
         with zipfile.ZipFile(artifacts["vpm_zip"]) as archive:
             vpm_names = set(archive.namelist())
-            self.assertEqual(archive.read("Runtime/EatEar.prefab"), prefab_bytes)
+            self.assertEqual(archive.read("Runtime/Milfy_EatEar.prefab"), prefab_bytes)
             self.assertNotIn(material_guid, {
                 guid.decode("ascii").lower()
                 for name in vpm_names
@@ -161,7 +163,7 @@ class ReleaseBuildTests(unittest.TestCase):
                     for member in archive.getmembers()
                     if member.name.endswith("/pathname")
                 }
-                legacy_prefab_path = "Assets/SaiEatEar/EatEar.prefab"
+                legacy_prefab_path = "Assets/SaiEatEar/Milfy_EatEar.prefab"
                 prefab_guid = pathname_to_guid[legacy_prefab_path]
                 self.assertEqual(
                     archive.extractfile(f"{prefab_guid}/asset").read(), prefab_bytes
@@ -258,7 +260,7 @@ class ReleaseBuildTests(unittest.TestCase):
         duplicate_repo = self.copy_repo_fixture()
         package = duplicate_repo / "Packages" / PACKAGE_ID
         particle_meta = package / "Runtime" / "Particle.mat.meta"
-        prefab_meta = package / "Runtime" / "EatEar.prefab.meta"
+        prefab_meta = package / "Runtime" / "Milfy_EatEar.prefab.meta"
         replacement = self.meta_guid(prefab_meta)
         text = particle_meta.read_text(encoding="utf-8")
         text, count = re.subn(r"(?m)^guid:\s*[0-9a-fA-F]{32}\s*$", f"guid: {replacement}", text, count=1)
@@ -269,7 +271,7 @@ class ReleaseBuildTests(unittest.TestCase):
 
     def test_unapproved_external_guid_reference_fails_closed(self):
         fixture_repo = self.copy_repo_fixture()
-        prefab = fixture_repo / "Packages" / PACKAGE_ID / "Runtime" / "EatEar.prefab"
+        prefab = fixture_repo / "Packages" / PACKAGE_ID / "Runtime" / "Milfy_EatEar.prefab"
         text = prefab.read_text(encoding="utf-8")
         old = "guid: 29ff6b7da63048e4bbaafcc6b8fe2ea6"
         self.assertIn(old, text)
@@ -283,10 +285,10 @@ class ReleaseBuildTests(unittest.TestCase):
         for path in (
             "../Assets/SaiEatEar/evil",
             "Assets/SaiEatEar/../escape",
-            "Assets//SaiEatEar/EatEar.prefab",
+            "Assets//SaiEatEar/Milfy_EatEar.prefab",
             "Assets/SaiEatEar/./Animation",
             "/Assets/SaiEatEar/absolute",
-            r"Assets\SaiEatEar\EatEar.prefab",
+            r"Assets\SaiEatEar\Milfy_EatEar.prefab",
             "Assets/Other/avatar.prefab",
             "C:/Assets/SaiEatEar/file",
         ):

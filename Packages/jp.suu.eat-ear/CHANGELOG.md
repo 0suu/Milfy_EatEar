@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Prefab ファイル名と初期オブジェクト名を Milfy_EatEar に統一。既存の GUID と fileID は維持。
+- アニメーション・音声を MA の Prefab 相対参照へ変更し、旧名 EatEar や配置後の改名でも動作するよう修正。
+- 旧互換コントローラーとその絶対パスのクリップは維持。
+
 ## 1.1.2 - 2026-10-25
 
 - 耳の初期マテリアルを旧版と同じ Milfy 付属 Hair_Another.mat の参照へ復元。

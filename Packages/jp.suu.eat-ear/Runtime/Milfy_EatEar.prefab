@@ -745,11 +745,11 @@ MonoBehaviour:
   animator: {fileID: 9100000, guid: 491d9a42c8e563741a1f8c2e7107968f, type: 2}
   layerType: 5
   deleteAttachedAnimator: 1
-  pathMode: 1
+  pathMode: 0
   matchAvatarWriteDefaults: 0
   relativePathRoot:
-    referencePath:
-    targetObject: {fileID: 0}
+    referencePath: Milfy_EatEar
+    targetObject: {fileID: 7716843429879542678}
   layerPriority: 0
 --- !u!1 &5642060651042341598
 GameObject:
@@ -10568,7 +10568,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7476681278513753667}
   m_Layer: 0
-  m_Name: EatEar
+  m_Name: Milfy_EatEar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

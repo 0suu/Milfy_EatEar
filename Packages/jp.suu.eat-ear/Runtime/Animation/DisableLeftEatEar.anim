@@ -93,7 +93,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_IsActive
-    path: EatEar/EatEar_L_Physbone/EatEar_L
+    path: EatEar_L_Physbone/EatEar_L
     classID: 1
     script: {fileID: 0}
     flags: 0
@@ -106,7 +106,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 3032909898
+      path: 3353796574
       attribute: 2086281974
       script: {fileID: 0}
       typeID: 1
@@ -360,7 +360,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_IsActive
-    path: EatEar/EatEar_L_Physbone/EatEar_L
+    path: EatEar_L_Physbone/EatEar_L
     classID: 1
     script: {fileID: 0}
     flags: 0

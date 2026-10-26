@@ -38,7 +38,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
   m_PositionCurves: []
   m_ScaleCurves: []
   m_FloatCurves:
@@ -77,7 +77,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: FreezeToWorld
-    path: EatEar/EatAnchor_L
+    path: EatAnchor_L
     classID: 114
     script: {fileID: 1116338486, guid: 58e2f01a24261a14cb82e6d3399e8b16, type: 3}
     flags: 0
@@ -116,7 +116,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_IsActive
-    path: EatEar/EatEar_L_Physbone/EatEar_L
+    path: EatEar_L_Physbone/EatEar_L
     classID: 1
     script: {fileID: 0}
     flags: 0
@@ -129,7 +129,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 3310055476
+      path: 806836782
       attribute: 571128884
       script: {fileID: 1116338486, guid: 58e2f01a24261a14cb82e6d3399e8b16, type: 3}
       typeID: 114
@@ -138,7 +138,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 3032909898
+      path: 3353796574
       attribute: 2086281974
       script: {fileID: 0}
       typeID: 1
@@ -147,7 +147,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
-      path: 400645659
+      path: 201935202
       attribute: 4
       script: {fileID: 0}
       typeID: 4
@@ -212,7 +212,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: FreezeToWorld
-    path: EatEar/EatAnchor_L
+    path: EatAnchor_L
     classID: 114
     script: {fileID: 1116338486, guid: 58e2f01a24261a14cb82e6d3399e8b16, type: 3}
     flags: 0
@@ -251,7 +251,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_IsActive
-    path: EatEar/EatEar_L_Physbone/EatEar_L
+    path: EatEar_L_Physbone/EatEar_L
     classID: 1
     script: {fileID: 0}
     flags: 0
@@ -281,7 +281,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.x
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -311,7 +311,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.y
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -341,7 +341,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: localEulerAnglesRaw.z
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -354,7 +354,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -366,7 +366,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -378,7 +378,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: EatEar/EatEar_L_Physbone
+    path: EatEar_L_Physbone
     classID: 4
     script: {fileID: 0}
     flags: 0
