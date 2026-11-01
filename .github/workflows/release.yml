@@ -81,7 +81,7 @@ jobs:
           release_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$ZIP_FILE"
           if [[ -z "$DISPATCH_TOKEN" ]]; then
             echo "::notice::SUU_HOME_DISPATCH_TOKEN is not configured; no secret was created."
-            echo "::notice::Run https://github.com/0suu/suu-home/actions/workflows/update-vpm-from-release.yml on develop with package_name=jp.suu.milfy-eat-ear, version=$VERSION, release_url=$release_url, zip_sha256=$ZIP_SHA256."
+            echo "::notice::Run https://github.com/0suu/suu-home/actions/workflows/update-vpm-from-release.yml on main with package_name=jp.suu.milfy-eat-ear, version=$VERSION, release_url=$release_url, zip_sha256=$ZIP_SHA256."
             exit 0
           fi
 
