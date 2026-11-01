@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Must match Packages/jp.suu.milfy-eat-ear/package.json
+        description: Release version (updates package.json automatically)
         required: true
         type: string
 
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: eat-ear-release-${{ inputs.version }}
+  group: eat-ear-release
   cancel-in-progress: false
 
 jobs:
@@ -25,16 +25,43 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
+        with:
+          ref: main
 
       - name: Validate version and reject an existing tag
         run: |
           set -euo pipefail
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Run the release workflow on main" >&2
+            exit 1
+          fi
           [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]
           existing_tags="$RUNNER_TEMP/eat-ear-release-tags"
           git ls-remote --tags origin "refs/tags/$VERSION" > "$existing_tags"
           if [[ -s "$existing_tags" ]]; then
             echo "Release tag already exists: $VERSION" >&2
             exit 1
+          fi
+
+      - name: Update package version
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          path = Path("Packages/jp.suu.milfy-eat-ear/package.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+          if data.get("name") != "jp.suu.milfy-eat-ear":
+              raise SystemExit("Unexpected package name")
+          data["version"] = version
+          data["url"] = f"https://github.com/0suu/Milfy_EatEar/releases/download/{version}/jp.suu.milfy-eat-ear-{version}.zip"
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PY
+          if ! grep -Fq "## $VERSION " Packages/jp.suu.milfy-eat-ear/CHANGELOG.md; then
+            echo "::warning::No changelog entry found for $VERSION. Add release notes separately."
           fi
 
       - name: Test and build release archives
@@ -56,12 +83,25 @@ jobs:
           echo "unitypackage=$unitypackage" >> "$GITHUB_OUTPUT"
           echo "zip_sha256=$zip_sha256" >> "$GITHUB_OUTPUT"
 
+      - name: Commit verified version
+        id: version_commit
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Packages/jp.suu.milfy-eat-ear/package.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): $VERSION"
+          fi
+          git push origin HEAD:refs/heads/main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         with:
           token: ${{ github.token }}
           tag_name: ${{ inputs.version }}
-          target_commitish: ${{ github.sha }}
+          target_commitish: ${{ steps.version_commit.outputs.sha }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           overwrite_files: false
@@ -81,7 +121,7 @@ jobs:
           release_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$ZIP_FILE"
           if [[ -z "$DISPATCH_TOKEN" ]]; then
             echo "::notice::SUU_HOME_DISPATCH_TOKEN is not configured; no secret was created."
-            echo "::notice::Run https://github.com/0suu/suu-home/actions/workflows/update-vpm-from-release.yml on develop with package_name=jp.suu.milfy-eat-ear, version=$VERSION, release_url=$release_url, zip_sha256=$ZIP_SHA256."
+            echo "::notice::Run https://github.com/0suu/suu-home/actions/workflows/update-vpm-from-release.yml on main with package_name=jp.suu.milfy-eat-ear, version=$VERSION, release_url=$release_url, zip_sha256=$ZIP_SHA256."
             exit 0
           fi
 
