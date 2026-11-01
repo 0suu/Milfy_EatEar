@@ -28,7 +28,7 @@ class OriginalEarVisibilityTests(unittest.TestCase):
         self.assertRegex(existing_merge, r"(?m)^  pathMode: 0$")
         self.assertIn("referencePath: Milfy_EatEar", existing_merge)
 
-    def test_both_sides_toggle_original_scale_using_existing_visibility_parameter(self):
+    def test_both_sides_toggle_scale_and_position_using_existing_visibility_parameter(self):
         controller = documents(ANIMATION / "OriginalEarVisibility.controller")
         for side in ("L", "R"):
             with self.subTest(side=side):
@@ -44,6 +44,15 @@ class OriginalEarVisibilityTests(unittest.TestCase):
                     self.assertEqual(re.findall(r"value: \{x: ([01]), y: \1, z: \1\}", scale), [str(value), str(value)])
                     states[state_name] = next((id_, doc) for id_, doc in controller.items() if f"guid: {guid(ANIMATION / clip_name)}" in doc)
                     self.assertIn(f"  m_Name: {state_name}\n", states[state_name][1])
+                hidden = (ANIMATION / f"OriginalEar_{side}_Hidden.anim").read_text(encoding="utf-8")
+                shown = (ANIMATION / f"OriginalEar_{side}_Shown.anim").read_text(encoding="utf-8")
+                old_shown = (ANIMATION / ("DisableLeftEatEar.anim" if side == "L" else "DisableRightEatEar.anim")).read_text(encoding="utf-8")
+                def positions(clip):
+                    curve = clip.split("  m_PositionCurves:\n", 1)[1].split("  m_ScaleCurves:", 1)[0]
+                    self.assertIn(f"    path: {path}\n", curve)
+                    return re.findall(r"value: \{x: ([^,]+), y: ([^,]+), z: ([^}]+)\}", curve)
+                self.assertEqual(positions(hidden), [("0", "0.15", "0")] * 2)
+                self.assertEqual(positions(shown), positions(old_shown))
                 for source, destination, condition in (("ShowOriginalEar", "HideOriginalEar", 1), ("HideOriginalEar", "ShowOriginalEar", 2)):
                     transition_id = int(re.search(r"m_Transitions:\n  - \{fileID: (-?\d+)\}", states[source][1]).group(1))
                     transition = controller[transition_id]
